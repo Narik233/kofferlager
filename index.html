@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Kofferlager</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Kofferlager">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#c8102e">
+<style>
+:root{
+  --bg:#f3f3f1;--surface:#fff;--fg:#1d1f22;--muted:#666a70;--line:#dcdcd8;
+  --accent:#c8102e;--accent-ink:#fff;--warn:#a86400;--warn-bg:#fbefd9;--ok:#2d7a46;--crit-bg:#fbe4e6;
+  --f-body:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#141517;--surface:#1d1f22;--fg:#ecebe7;--muted:#9a9ea4;--line:#33363a;
+  --accent:#ff4d5e;--accent-ink:#1a0005;--warn:#f0b04c;--warn-bg:#3a2a10;--ok:#6fcf8e;--crit-bg:#3d161b;color-scheme:dark}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 var(--f-body);font-variant-numeric:tabular-nums}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--accent);z-index:30}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--accent);color:#fff;padding:12px max(16px,env(safe-area-inset-left,0px)) 12px max(16px,env(safe-area-inset-right,0px));display:flex;align-items:center;gap:10px}
+.top h1{margin:0;font-size:1.35rem;font-weight:800;letter-spacing:.01em;flex:1}
+.top button{background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:10px;padding:9px 12px;font:600 .95rem var(--f-body)}
+.wrap{max-width:720px;margin:0 auto;padding-block:16px calc(40px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:20px}
+h2{margin:0;font-size:1.05rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+.sub{color:var(--muted);font-size:.88rem}
+.mono{font-family:var(--f-mono)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.stat b{display:block;font-size:1.7rem;font-weight:800;line-height:1.1}
+.stat span{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.stat.alert{border-color:var(--accent)}.stat.alert b{color:var(--accent)}
+.note{background:var(--warn-bg);border-radius:10px;padding:10px 12px;font-size:.9rem;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+.chip{flex:none;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:6px 12px;font:600 .88rem var(--f-body)}
+.chip[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+input.search{font:16px var(--f-body)}
+.group{display:flex;flex-direction:column;gap:8px}
+.ghead{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid var(--fg);padding-bottom:4px}
+.ghead small{color:var(--muted)}
+.row{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--ok);border-radius:0 10px 10px 0}
+.row.low{border-left-color:var(--accent)}.row.tight{border-left-color:var(--warn)}
+.row.hit{outline:3px solid var(--accent);outline-offset:2px}
+.rmain{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px}
+.code{font-family:var(--f-mono);font-size:.82rem;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:4px 6px;text-align:center}
+.info{min-width:0;background:none;border:0;padding:0;text-align:left;color:inherit;font:inherit}
+.info .n{font-weight:600;line-height:1.25;overflow-wrap:anywhere}
+.info .m{font-size:.78rem;color:var(--muted)}
+.pill{display:inline-block;font-size:.68rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border-radius:4px;padding:1px 6px;margin-left:4px;vertical-align:1px}
+.pill.low{background:var(--crit-bg);color:var(--accent)}.pill.tight{background:var(--warn-bg);color:var(--warn)}
+.step{display:flex;align-items:center;gap:4px}
+.step button{width:42px;height:42px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--fg);font:700 1.3rem var(--f-body)}
+.step output{min-width:2.4em;text-align:center;font-size:1.4rem;font-weight:800}
+.edit{border-top:1px dashed var(--line);padding:12px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.edit label{display:flex;flex-direction:column;font-size:.75rem;color:var(--muted);gap:3px;min-width:0}
+.full{grid-column:1/-1}
+input{font:16px var(--f-body);color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%;min-width:0}
+input:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.edit .actions{grid-column:1/-1}
+.btn{border:0;border-radius:9px;padding:10px 14px;font:700 .95rem var(--f-body);background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.btn.danger{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.btn:disabled{opacity:.45}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.otable{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th{text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--line);padding:4px 6px}
+td{border-bottom:1px solid var(--line);padding:6px}
+td.q{text-align:right;font-weight:800;font-size:1.1rem}
+.labels{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.label{background:#fff;color:#111;border:1px solid #bbb;border-radius:6px;padding:6px;display:grid;grid-template-columns:58px 1fr;gap:6px;align-items:center;break-inside:avoid}
+.label svg{width:58px;height:58px;display:block}
+.label .lc{font-family:var(--f-mono);font-size:.95rem;font-weight:700}
+.label .ln{font-size:.72rem;line-height:1.2;overflow-wrap:anywhere}
+.empty{text-align:center;color:var(--muted);padding:22px 8px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:9px 14px;border-radius:9px;font-size:.92rem;z-index:50}
+.scan{position:fixed;inset:0;background:#000;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:env(safe-area-inset-top,0px) 16px env(safe-area-inset-bottom,0px)}
+.scan video{width:min(100%,480px);aspect-ratio:1;object-fit:cover;border-radius:14px;border:3px solid var(--accent)}
+.scan p{color:#fff;margin:0;text-align:center}
+textarea{width:100%;font:13px var(--f-mono);background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:8px}
+@media print{
+  body *{visibility:hidden}
+  #labelCard,#labelCard *{visibility:visible}
+  #labelCard{position:absolute;inset:0;border:0;padding:0}
+  #labelCard h2,#labelCard .sub,#labelCard .actions,body::before{display:none}
+  .labels{grid-template-columns:repeat(4,1fr)}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>Kofferlager</h1>
+  <button type="button" id="scanBtn">QR scannen</button>
+</header>
+
+<main class="wrap">
+  <section class="stats" aria-label="Übersicht">
+    <div class="stat"><b id="sPos">0</b><span>Positionen</span></div>
+    <div class="stat" id="sLowBox"><b id="sLow">0</b><span>Nachbestellen</span></div>
+    <div class="stat"><b id="sTight">0</b><span>Knapp</span></div>
+  </section>
+
+  <div id="notice" class="note" hidden>
+    <span>Beispieldaten. Tippe eine Zeile an, um sie an deine Boxen anzupassen.</span>
+    <button class="btn ghost" type="button" id="clearDemo">Beispiele löschen</button>
+  </div>
+
+  <section class="group" aria-label="Bestand">
+    <input class="search" id="search" type="search" placeholder="Suchen: Artikel, Fach, Art.-Nr." autocomplete="off">
+    <div class="chips" id="chips" role="toolbar" aria-label="Filter"></div>
+    <div id="list"></div>
+    <button class="btn ghost" id="addBtn" type="button">+ Position anlegen</button>
+    <div id="newForm"></div>
+  </section>
+
+  <section class="card" aria-labelledby="hOrder">
+    <h2 id="hOrder">Würth-Bestellliste</h2>
+    <div class="sub">Alles auf oder unter Mindestbestand. Menge = Sollbestand minus Bestand.</div>
+    <div class="otable" id="order"></div>
+    <div class="actions">
+      <button class="btn" id="shareOrder" type="button">Teilen</button>
+      <button class="btn ghost" id="copyOrder" type="button">Kopieren</button>
+    </div>
+    <textarea id="orderText" readonly hidden rows="6"></textarea>
+  </section>
+
+  <section class="card" id="labelCard" aria-labelledby="hLab">
+    <h2 id="hLab">QR-Etiketten</h2>
+    <div class="sub">Auf die Systembox kleben. In der App mit „QR scannen“ öffnen und mit − ausbuchen.</div>
+    <div class="labels" id="labels"></div>
+    <div class="actions"><button class="btn" id="printLabels" type="button">Drucken</button></div>
+  </section>
+
+  <section class="card" aria-labelledby="hBak">
+    <h2 id="hBak">Sicherung</h2>
+    <div class="sub">Die Daten liegen nur auf diesem Gerät. Exportiere regelmäßig eine CSV nach iCloud Drive.</div>
+    <div class="sub" id="lastBak"></div>
+    <div class="actions">
+      <button class="btn" id="exportBtn" type="button">CSV exportieren</button>
+      <label class="btn ghost" for="importFile" style="cursor:pointer">CSV importieren</label>
+      <input type="file" id="importFile" accept=".csv,text/csv,text/plain" hidden>
+    </div>
+    <div id="importConfirm"></div>
+  </section>
+</main>
+
+<div class="scan" id="scan" hidden>
+  <video id="video" playsinline muted></video>
+  <p id="scanMsg">QR-Etikett in den Rahmen halten</p>
+  <button class="btn" type="button" id="scanClose">Abbrechen</button>
+</div>
+<canvas id="cv" hidden></canvas>
+
+<script src="qrcode.js"></script>
+<script src="jsQR.js"></script>
+<script>
+const KEY="kofferlager.v1";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let S={items:[],lastBackup:null}, filter="all", q="", openId=null, hitId=null;
+
+const DEMO=[
+ ["k1-01","Koffer K1","K1-01","Wago 221-412 Verbindungsklemme 2-Leiter",42,20,100],
+ ["k1-02","Koffer K1","K1-02","Wago 221-413 Verbindungsklemme 3-Leiter",15,20,100],
+ ["k1-03","Koffer K1","K1-03","Wago 221-415 Verbindungsklemme 5-Leiter",12,10,50],
+ ["k1-04","Koffer K1","K1-04","Aderendhülsen 0,5 mm² isoliert",180,100,500],
+ ["k1-05","Koffer K1","K1-05","Aderendhülsen 0,75 mm² isoliert",60,100,500],
+ ["k1-06","Koffer K1","K1-06","Kabelbinder 200 × 3,6 mm schwarz",75,50,200],
+ ["k2-01","Koffer K2","K2-01","Dübel 6 × 30 mm",38,20,100],
+ ["k2-02","Koffer K2","K2-02","Spanplattenschraube 4 × 40 Senkkopf",24,30,100],
+ ["k2-03","Koffer K2","K2-03","Linsenkopfschraube 3,5 × 25 für Leser-Montage",40,20,100],
+ ["k2-04","Koffer K2","K2-04","RJ45-Stecker Cat6 werkzeuglos",6,5,20]
+].map(([id,koffer,fach,name,bestand,min,soll])=>({id,koffer,fach,name,art:"",einheit:"Stk",bestand,min,soll,beispiel:true}));
+
+function load(){try{const r=localStorage.getItem(KEY);if(r){S=JSON.parse(r);S.items??=[];return}}catch{}S={items:DEMO.map(x=>({...x})),lastBackup:null};save()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch{toast("Speichern auf dem Gerät fehlgeschlagen")}}
+function toast(t){const d=document.createElement("div");d.className="toast";d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),1900)}
+const state=i=>{const b=+i.bestand||0,m=+i.min||0;return b<=m?"low":b<=Math.ceil(m*1.5)?"tight":"ok"};
+const qty=i=>Math.max((+i.soll||0)-(+i.bestand||0),0);
+const sorted=()=>S.items.slice().sort((a,b)=>(a.koffer||"").localeCompare(b.koffer||"")||(a.fach||"").localeCompare(b.fach||"",undefined,{numeric:true}));
+function qrSvg(t){const g=qrcode(0,"M");g.addData(t);g.make();return g.createSvgTag({cellSize:4,margin:2,scalable:true})}
+const newId=()=>"p"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+
+function render(){
+  const low=S.items.filter(i=>state(i)==="low"),tight=S.items.filter(i=>state(i)==="tight");
+  $("#sPos").textContent=S.items.length;$("#sLow").textContent=low.length;$("#sTight").textContent=tight.length;
+  $("#sLowBox").classList.toggle("alert",low.length>0);
+  $("#notice").hidden=!S.items.some(i=>i.beispiel);
+  const koffer=[...new Set(sorted().map(i=>i.koffer||"Ohne Koffer"))];
+  const opts=[["all","Alle"],["low","Nachbestellen"],...koffer.map(k=>["k:"+k,k])];
+  $("#chips").innerHTML=opts.map(([v,l])=>`<button class="chip" type="button" data-f="${esc(v)}" aria-pressed="${filter===v}">${esc(l)}</button>`).join("");
+  let view=sorted();
+  if(filter==="low")view=view.filter(i=>state(i)!=="ok");
+  else if(filter.startsWith("k:"))view=view.filter(i=>(i.koffer||"Ohne Koffer")===filter.slice(2));
+  if(q){const t=q.toLowerCase();view=view.filter(i=>[i.name,i.fach,i.art,i.koffer].some(v=>String(v||"").toLowerCase().includes(t)))}
+  const L=$("#list");
+  if(!S.items.length)L.innerHTML=`<div class="empty">Noch keine Positionen. Lege mit „+ Position anlegen“ die erste Box an.</div>`;
+  else if(!view.length)L.innerHTML=`<div class="empty">Keine Treffer.</div>`;
+  else{const g={};view.forEach(i=>(g[i.koffer||"Ohne Koffer"]??=[]).push(i));
+    L.innerHTML=Object.entries(g).map(([k,r])=>`<div class="group"><div class="ghead"><h2>${esc(k)}</h2><small>${r.length} Fächer</small></div>${r.map(rowHtml).join("")}</div>`).join("")}
+  renderOrder();renderLabels();
+  $("#lastBak").textContent=S.lastBackup?"Letzter Export: "+new Date(S.lastBackup).toLocaleString("de-DE",{dateStyle:"medium",timeStyle:"short"}):"Noch kein Export.";
+}
+function rowHtml(i){const s=state(i);
+  const pill=s==="low"?`<span class="pill low">Nachbestellen</span>`:s==="tight"?`<span class="pill tight">Knapp</span>`:"";
+  return `<div class="row ${s==="ok"?"":s}${hitId===i.id?" hit":""}" id="r-${esc(i.id)}"><div class="rmain">
+  <span class="code">${esc(i.fach||"–")}</span>
+  <button class="info" type="button" data-open="${esc(i.id)}" aria-expanded="${openId===i.id}"><div class="n">${esc(i.name)}${pill}</div>
+  <div class="m">${i.art?`<span class="mono">${esc(i.art)}</span> · `:""}min ${esc(i.min)} · soll ${esc(i.soll)} ${esc(i.einheit||"Stk")}</div></button>
+  <div class="step"><button type="button" data-d="-1" data-id="${esc(i.id)}" aria-label="Eins entnehmen">−</button><output>${esc(i.bestand)}</output><button type="button" data-d="1" data-id="${esc(i.id)}" aria-label="Eins hinzufügen">+</button></div>
+  </div>${openId===i.id?formHtml(i):""}</div>`}
+function formHtml(i,isNew){const id=isNew?"new":i.id;
+  const f=(k,l,t="text",c="")=>`<label class="${c}">${l}<input id="f-${id}-${k}" type="${t}" ${t==="number"?'inputmode="numeric" min="0"':""} value="${esc(i[k]??"")}"></label>`;
+  return `<form class="edit" data-form="${esc(id)}">${f("name","Bezeichnung","text","full")}${f("art","Würth Art.-Nr.")}${f("einheit","Einheit")}${f("koffer","Koffer")}${f("fach","Fach / Box")}${f("bestand","Bestand","number")}${f("min","Mindestbestand","number")}${f("soll","Sollbestand","number")}
+  <div class="actions"><button class="btn" type="submit">Speichern</button><button class="btn ghost" type="button" data-cancel>Schließen</button>${isNew?"":`<span data-delwrap><button class="btn danger" type="button" data-del="${esc(i.id)}">Löschen</button></span>`}</div></form>`}
+function orderRows(){return sorted().filter(i=>state(i)==="low"&&qty(i)>0)}
+function orderText(){return "Würth-Bestellung Kofferlager\n"+orderRows().map(i=>`${i.art||"(Art.-Nr. fehlt)"} – ${qty(i)} ${i.einheit||"Stk"} – ${i.name}`).join("\n")}
+function renderOrder(){const r=orderRows();
+  $("#order").innerHTML=r.length?`<table><thead><tr><th>Art.-Nr.</th><th>Artikel</th><th style="text-align:right">Menge</th></tr></thead><tbody>${r.map(i=>`<tr><td class="mono">${esc(i.art||"—")}</td><td>${esc(i.name)}</td><td class="q">${qty(i)}</td></tr>`).join("")}</tbody></table>`:`<div class="empty">Alles auf Lager. Keine Bestellung nötig.</div>`;
+  $("#shareOrder").disabled=$("#copyOrder").disabled=!r.length}
+function renderLabels(){$("#labels").innerHTML=sorted().map(i=>`<div class="label">${qrSvg("KL:"+i.id)}<div><div class="lc">${esc(i.fach)}</div><div class="ln">${esc(i.name)}</div></div></div>`).join("")||`<div class="empty">Keine Positionen.</div>`}
+
+function focusItem(id){const it=S.items.find(x=>x.id===id);if(!it){toast("Diese Box gibt es nicht mehr");return}
+  hitId=id;filter="all";q="";$("#search").value="";render();
+  const el=document.getElementById("r-"+id);if(el)el.scrollIntoView({block:"center"});setTimeout(()=>{hitId=null;const e=document.getElementById("r-"+id);e&&e.classList.remove("hit")},4000)}
+
+/* CSV */
+const COLS=["id","koffer","fach","name","art","einheit","bestand","min","soll"];
+const csvCell=v=>{v=String(v??"");return /[;"\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+function toCsv(){return "﻿"+COLS.join(";")+"\n"+sorted().map(i=>COLS.map(c=>csvCell(i[c])).join(";")).join("\n")}
+function parseCsv(t){t=t.replace(/^﻿/,"");const rows=[];let r=[],c="",inq=false;
+  for(let k=0;k<t.length;k++){const ch=t[k];
+    if(inq){if(ch=='"'){if(t[k+1]=='"'){c+='"';k++}else inq=false}else c+=ch}
+    else if(ch=='"')inq=true;else if(ch==";"){r.push(c);c=""}else if(ch=="\n"){r.push(c.replace(/\r$/,""));rows.push(r);r=[];c=""}else c+=ch}
+  if(c||r.length){r.push(c.replace(/\r$/,""));rows.push(r)}
+  const head=rows.shift()?.map(h=>h.trim().toLowerCase())||[];
+  if(!["name","bestand"].every(h=>head.includes(h)))throw new Error("Spalten fehlen");
+  return rows.filter(r=>r.some(x=>x.trim())).map(r=>{const o={};head.forEach((h,k)=>o[h]=(r[k]??"").trim());
+    return{id:/^[A-Za-z0-9-]+$/.test(o.id||"")?o.id:newId(),koffer:o.koffer||"",fach:o.fach||"",name:o.name||"",art:o.art||"",einheit:o.einheit||"Stk",bestand:Math.max(0,parseInt(o.bestand)||0),min:Math.max(0,parseInt(o.min)||0),soll:Math.max(0,parseInt(o.soll)||0)}})}
+async function exportCsv(){const name=`kofferlager-${new Date().toISOString().slice(0,10)}.csv`;
+  const file=new File([toCsv()],name,{type:"text/csv"});
+  try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:name})}
+    else{const a=document.createElement("a");a.href=URL.createObjectURL(file);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)}
+    S.lastBackup=Date.now();save();render();toast("Export erstellt")}catch(e){if(e.name!=="AbortError")toast("Export fehlgeschlagen")}}
+
+/* Scanner */
+let stream=null,raf=0;
+async function startScan(){const box=$("#scan");box.hidden=false;$("#scanMsg").textContent="QR-Etikett in den Rahmen halten";
+  try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"},audio:false});
+    const v=$("#video");v.srcObject=stream;await v.play();tick()}
+  catch{$("#scanMsg").textContent="Kamera nicht verfügbar. Erlaube den Kamerazugriff in den iPhone-Einstellungen."}}
+function stopScan(){cancelAnimationFrame(raf);if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;$("#scan").hidden=true}
+function tick(){const v=$("#video"),cv=$("#cv");
+  if(v.readyState===v.HAVE_ENOUGH_DATA){const w=480,h=Math.round(480*v.videoHeight/v.videoWidth)||480;cv.width=w;cv.height=h;
+    const ctx=cv.getContext("2d",{willReadFrequently:true});ctx.drawImage(v,0,0,w,h);
+    const r=jsQR(ctx.getImageData(0,0,w,h).data,w,h,{inversionAttempts:"dontInvert"});
+    if(r&&r.data){const m=r.data.match(/^KL:([A-Za-z0-9-]+)$/)||r.data.match(/#b-([A-Za-z0-9-]+)$/);
+      if(m){stopScan();if(navigator.vibrate)navigator.vibrate(40);focusItem(m[1]);return}
+      $("#scanMsg").textContent="Kein Kofferlager-Etikett"}}
+  raf=requestAnimationFrame(tick)}
+
+/* Events */
+document.addEventListener("click",e=>{const t=e.target.closest("button");if(!t)return;
+  if(t.dataset.f!=null){filter=t.dataset.f;render();return}
+  if(t.dataset.d){const it=S.items.find(x=>x.id===t.dataset.id);if(!it)return;it.bestand=Math.max(0,(+it.bestand||0)+(+t.dataset.d));save();render();return}
+  if(t.dataset.open){openId=openId===t.dataset.open?null:t.dataset.open;render();return}
+  if(t.hasAttribute("data-cancel")){if(t.closest("[data-form]").dataset.form==="new")$("#newForm").innerHTML="";else{openId=null;render()}return}
+  if(t.dataset.del){t.closest("[data-delwrap]").innerHTML=`Wirklich löschen? <button class="btn danger" type="button" data-delok="${esc(t.dataset.del)}">Ja, löschen</button>`;return}
+  if(t.dataset.delok){S.items=S.items.filter(i=>i.id!==t.dataset.delok);openId=null;save();render();toast("Gelöscht");return}
+  if(t.dataset.impok!=null){try{S.items=JSON.parse(sessionStorage.getItem("kl-import")||"[]");save();openId=null;render();toast("Importiert")}catch{toast("Import fehlgeschlagen")}$("#importConfirm").innerHTML="";return}
+  if(t.dataset.impno!=null){$("#importConfirm").innerHTML="";return}
+  switch(t.id){
+    case"addBtn":$("#newForm").innerHTML=formHtml({name:"",art:"",einheit:"Stk",koffer:filter.startsWith("k:")?filter.slice(2):"",fach:"",bestand:0,min:0,soll:0},true);$("#f-new-name").focus();break;
+    case"clearDemo":S.items=S.items.filter(i=>!i.beispiel);save();render();break;
+    case"copyOrder":navigator.clipboard.writeText(orderText()).then(()=>toast("Bestellliste kopiert"),()=>{const ta=$("#orderText");ta.hidden=false;ta.value=orderText();ta.select()});break;
+    case"shareOrder":if(navigator.share)navigator.share({title:"Würth-Bestellung",text:orderText()}).catch(()=>{});else $("#copyOrder").click();break;
+    case"printLabels":window.print();break;
+    case"exportBtn":exportCsv();break;
+    case"scanBtn":startScan();break;
+    case"scanClose":stopScan();break;
+  }});
+document.addEventListener("submit",e=>{e.preventDefault();const id=e.target.dataset.form;const g=k=>document.getElementById(`f-${id}-${k}`).value.trim();
+  const body={name:g("name"),art:g("art"),einheit:g("einheit")||"Stk",koffer:g("koffer"),fach:g("fach"),bestand:Math.max(0,parseInt(g("bestand"))||0),min:Math.max(0,parseInt(g("min"))||0),soll:Math.max(0,parseInt(g("soll"))||0)};
+  if(!body.name){toast("Bezeichnung fehlt");return}
+  if(id==="new"){S.items.push({id:newId(),...body});$("#newForm").innerHTML=""}else{const k=S.items.findIndex(i=>i.id===id);S.items[k]={id,...body};openId=null}
+  save();render();toast("Gespeichert")});
+$("#search").addEventListener("input",e=>{q=e.target.value.trim();render()});
+$("#importFile").addEventListener("change",async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;
+  try{const items=parseCsv(await f.text());sessionStorage.setItem("kl-import",JSON.stringify(items));
+    $("#importConfirm").innerHTML=`<div class="note"><span>${items.length} Positionen gefunden. Der aktuelle Bestand wird ersetzt.</span><button class="btn" type="button" data-impok>Ersetzen</button><button class="btn ghost" type="button" data-impno>Abbrechen</button></div>`}
+  catch{toast("Datei nicht erkannt. Bitte eine Kofferlager-CSV wählen.")}});
+window.addEventListener("hashchange",()=>{const m=location.hash.match(/^#b-([A-Za-z0-9-]+)$/);if(m)focusItem(m[1])});
+
+load();render();
+{const m=location.hash.match(/^#b-([A-Za-z0-9-]+)$/);if(m)focusItem(m[1])}
+if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>
